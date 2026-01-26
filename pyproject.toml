@@ -5,11 +5,16 @@ description = ""
 authors = [
     {name = "Yoon Oh",email = "yoonoh.cyoh@gmail.com"}
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.12, <3.15.0"
+
 dependencies = [
+    "faiss-cpu (>=1.13.2,<2.0.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false

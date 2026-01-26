@@ -13,3 +13,4 @@ k = 5  # number of nearest neighbors
 D, I = index.search(q, k)  # actual search, I - indices of neighbors, D - distances
 print("Indices of nearest neighbors:\n", I)
 print("Distances to nearest neighbors:\n", D)
+
