@@ -1,5 +1,5 @@
 import faiss
-from abstract_vector_index import AbstractVectorIndex
+from src.abstract_vector_index import AbstractVectorIndex
 
 class FaissFlatL2Index(AbstractVectorIndex):
 
