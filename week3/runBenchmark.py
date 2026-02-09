@@ -41,12 +41,12 @@ def main():
 
     for n in sizes:
         data = np.random.random((n, d)).astype("float32")
-        print("N =", n)
+        print("Data Size =", n)
 
-        for name, IndexClass in index_classes:
+        for IndexTypeName, IndexClass in index_classes:
             index = IndexClass(d)
             tt, bt, st = run_benchmark(index, data, queries, k=5)
-            print(name, tt, bt, st)
+            print(IndexTypeName, tt, bt, st)
 
 if __name__ == "__main__":
     main()
