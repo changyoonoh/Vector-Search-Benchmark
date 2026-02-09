@@ -25,4 +25,28 @@ def run_benchmark (index, data, queries, k=5):
     return train_time, build_time, search_time
 
 def main():
-    d
+    d = 32
+    nq = 20000
+    queries = np.random.random((nq, d)).astype("float32")
+
+    sizes = [500, 1000, 2000, 5000]
+
+    index_classes = [
+        ("FlatL2", FaissFlatL2Index),
+        ("FlatIP", FaissFlatIPIndex),
+        ("HNSW", FaissFlatHNSWIndex),
+        ("SQ_L2", FaissScalarQuantizerL2Index),
+        ("SQ_IP", FaissScalarQuantizerIPIndex),
+    ]
+
+    for n in sizes:
+        data = np.random.random((n, d)).astype("float32")
+        print("N =", n)
+
+        for name, IndexClass in index_classes:
+            index = IndexClass(d)
+            tt, bt, st = run_benchmark(index, data, queries, k=5)
+            print(name, tt, bt, st)
+
+if __name__ == "__main__":
+    main()
