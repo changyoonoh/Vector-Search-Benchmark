@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class AbstractVectorIndex(ABC):
 
-    def train(self, data):
+    def train(self, data): #not pass because sometimes it is not used? 
         return
 
     @abstractmethod
