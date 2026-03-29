@@ -13,6 +13,9 @@ from src.lancedb_flat_index import LanceDBFlatIndex
 from src.lancedb_ivf_index import LanceDBIVFIndex
 from src.qdrant_index import QdrantIndex
 from src.weaviate_index import WeaviateIndex
+from src.chroma_index import ChromaIndex
+from src.redis_index import RedisIndex
+from src.elasticsearch_index import ElasticsearchIndex
 
 def run_benchmark (index, data, queries, k=5):
     t0 = time.perf_counter()
@@ -59,6 +62,12 @@ def main():
     ("Qdrant_Cosine", lambda d: QdrantIndex(d, metric_type="cosine")),
     ("Weaviate_L2", lambda d: WeaviateIndex(d, metric_type="l2")),
     ("Weaviate_Cosine", lambda d: WeaviateIndex(d, metric_type="cosine")),
+    ("Chroma_L2", lambda d: ChromaIndex(d, metric_type="l2")),
+    ("Chroma_Cosine", lambda d: ChromaIndex(d, metric_type="cosine")),
+    ("Redis_L2", lambda d: RedisIndex(d, metric_type="l2")),
+    ("Redis_Cosine", lambda d: RedisIndex(d, metric_type="cosine")),
+    ("ES_L2", lambda d: ElasticsearchIndex(d, metric_type="l2")),
+    ("ES_Cosine", lambda d: ElasticsearchIndex(d, metric_type="cosine")),
     ]
 
     results = {name: {"train": [], "build": [], "search": []} for name, _ in index_factories}

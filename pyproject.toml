@@ -15,7 +15,11 @@ dependencies = [
     "lancedb (>=0.30.1,<0.31.0)",
     "meilisearch (>=0.40.0,<0.41.0)",
     "qdrant-client (>=1.17.1,<2.0.0)",
-    "weaviate-client (>=4.20.4,<5.0.0)"
+    "weaviate-client (>=4.20.4,<5.0.0)",
+    "chromadb (>=1.5.5,<2.0.0)",
+    "redis (>=7.4.0,<8.0.0)",
+    "elasticsearch (>=9.3.0,<10.0.0)",
+    "annoy (>=1.17.3,<2.0.0)"
 ]
 
 
