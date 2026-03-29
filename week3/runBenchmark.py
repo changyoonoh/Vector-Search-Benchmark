@@ -16,6 +16,9 @@ from src.weaviate_index import WeaviateIndex
 from src.chroma_index import ChromaIndex
 from src.redis_index import RedisIndex
 from src.elasticsearch_index import ElasticsearchIndex
+from src.annoy_index import AnnoyIndex as AnnoyVecIndex
+from src.pgvector_index import PgvectorIndex
+from src.hnswlib_index import HNSWLibIndex
 
 def run_benchmark (index, data, queries, k=5):
     t0 = time.perf_counter()
@@ -68,6 +71,12 @@ def main():
     ("Redis_Cosine", lambda d: RedisIndex(d, metric_type="cosine")),
     ("ES_L2", lambda d: ElasticsearchIndex(d, metric_type="l2")),
     ("ES_Cosine", lambda d: ElasticsearchIndex(d, metric_type="cosine")),
+    ("Annoy_L2", lambda d: AnnoyVecIndex(d, metric_type="l2")),
+    ("Annoy_Angular", lambda d: AnnoyVecIndex(d, metric_type="angular")),
+    ("PgVector_L2", lambda d: PgvectorIndex(d, metric_type="l2")),
+    ("PgVector_Cosine", lambda d: PgvectorIndex(d, metric_type="cosine")),
+    ("HNSWLib_L2", lambda d: HNSWLibIndex(d, metric_type="l2")),
+    ("HNSWLib_Cosine", lambda d: HNSWLibIndex(d, metric_type="cosine")),
     ]
 
     results = {name: {"train": [], "build": [], "search": []} for name, _ in index_factories}
