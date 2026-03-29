@@ -11,6 +11,8 @@ from src.milvus_index import MilvusIndex
 from src.meilisearch_index import MeilisearchIndex
 from src.lancedb_flat_index import LanceDBFlatIndex
 from src.lancedb_ivf_index import LanceDBIVFIndex
+from src.qdrant_index import QdrantIndex
+from src.weaviate_index import WeaviateIndex
 
 def run_benchmark (index, data, queries, k=5):
     t0 = time.perf_counter()
@@ -53,6 +55,10 @@ def main():
     ("LanceDB_FLAT_DOT", lambda d: LanceDBFlatIndex(d, metric_type="dot")),
     ("LanceDB_IVF_L2", lambda d: LanceDBIVFIndex(d, metric_type="l2")),
     ("LanceDB_IVF_DOT", lambda d: LanceDBIVFIndex(d, metric_type="dot")),
+    ("Qdrant_L2", lambda d: QdrantIndex(d, metric_type="l2")),
+    ("Qdrant_Cosine", lambda d: QdrantIndex(d, metric_type="cosine")),
+    ("Weaviate_L2", lambda d: WeaviateIndex(d, metric_type="l2")),
+    ("Weaviate_Cosine", lambda d: WeaviateIndex(d, metric_type="cosine")),
     ]
 
     results = {name: {"train": [], "build": [], "search": []} for name, _ in index_factories}
