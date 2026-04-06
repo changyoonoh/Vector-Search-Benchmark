@@ -11,6 +11,11 @@ class ChromaIndex(AbstractVectorIndex):
         
         space = "l2" if metric_type == "l2" else "cosine"
         
+        try:
+            self.client.delete_collection("bench_vectors")
+        except:
+            pass
+
         self.collection = self.client.create_collection(
             name="bench_vectors",
             metadata={"hnsw:space": space}
@@ -20,10 +25,13 @@ class ChromaIndex(AbstractVectorIndex):
         return
 
     def add(self, data):
-        self.collection.add(
-            ids=[str(i) for i in range(len(data))],
-            embeddings=data.tolist()
-        )
+        batch_size = 5000
+        for start in range(0, len(data), batch_size):
+            end = start + batch_size
+            self.collection.add(
+                ids=[str(i) for i in range(start, min(end, len(data)))],
+                embeddings=data[start:end].tolist()
+            )
 
     def search(self, queries, k):
         all_D, all_I = [], []

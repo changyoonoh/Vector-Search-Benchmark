@@ -13,7 +13,10 @@ class QdrantIndex(AbstractVectorIndex):
 
         distance = Distance.EUCLID if metric_type == "l2" else Distance.COSINE
 
-        self.client.recreate_collection(
+        if self.client.collection_exists(self.collection_name):
+            self.client.delete_collection(self.collection_name)
+
+        self.client.create_collection(
             collection_name=self.collection_name,
             vectors_config=VectorParams(size=d, distance=distance)
         )
@@ -32,11 +35,11 @@ class QdrantIndex(AbstractVectorIndex):
         all_D, all_I = [], []
 
         for q in queries:
-            results = self.client.search(
+            results = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=q.tolist(),
+                query=q.tolist(),
                 limit=k
-            )
+            ).points
             all_D.append([r.score for r in results])
             all_I.append([r.id for r in results])
 

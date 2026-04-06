@@ -28,11 +28,14 @@ class WeaviateIndex(AbstractVectorIndex):
         return
 
     def add(self, data):
-        objects = [
-            wvc.data.DataObject(properties={"doc_id": i}, vector=vec.tolist())
-            for i, vec in enumerate(data)
-        ]
-        self.collection.data.insert_many(objects)
+        batch_size = 10000
+        for start in range(0, len(data), batch_size):
+            end = min(start + batch_size, len(data))
+            objects = [
+                wvc.data.DataObject(properties={"doc_id": i}, vector=data[i].tolist())
+                for i in range(start, end)
+            ]
+            self.collection.data.insert_many(objects)
 
     def search(self, queries, k):
         all_D, all_I = [], []
@@ -46,5 +49,6 @@ class WeaviateIndex(AbstractVectorIndex):
             all_D.append([o.metadata.distance for o in results.objects])
             all_I.append([o.properties["doc_id"] for o in results.objects])
 
+        self.client.close()
         return np.array(all_D, dtype=np.float32), np.array(all_I, dtype=np.int64)
     

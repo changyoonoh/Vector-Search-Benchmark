@@ -1,5 +1,5 @@
 import numpy as np
-from annoy import AnnoyIndex
+from annoy import AnnoyIndex as AnnoyLibIndex
 from src.abstract_vector_index import AbstractVectorIndex
 
 class AnnoyIndex(AbstractVectorIndex):
@@ -8,7 +8,7 @@ class AnnoyIndex(AbstractVectorIndex):
         self.d = d
         self.n_trees = n_trees
         self.metric = "euclidean" if metric_type == "l2" else "angular"
-        self.index = AnnoyIndex(d, self.metric)
+        self.index = AnnoyLibIndex(d, self.metric)
 
     def train(self, data):
         return

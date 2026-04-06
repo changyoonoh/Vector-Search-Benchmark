@@ -4,7 +4,7 @@ from src.abstract_vector_index import AbstractVectorIndex
 
 class LanceDBIVFIndex(AbstractVectorIndex):
 
-    def __init__(self, d, metric_type="l2", db_path="./lancedb_ivf_bench"):
+    def __init__(self, d, metric_type="l2", db_path="/Users/yoonoh/Desktop/CS 492/lancedb_cache/lancedb_ivf_bench"):
         self.d = d
         self.metric_type = metric_type
         self.db = lancedb.connect(db_path)
@@ -21,10 +21,12 @@ class LanceDBIVFIndex(AbstractVectorIndex):
 
         self.table = self.db.create_table("vectors", data=docs, mode="overwrite")
 
+        num_sub_vectors = next(m for m in [8, 4, 2, 1] if self.d % m == 0)
+        num_partitions = min(128, len(data) // 10)
         self.table.create_index(
             metric=self.metric_type,
-            num_partitions=128,
-            num_sub_vectors=8,
+            num_partitions=num_partitions,
+            num_sub_vectors=num_sub_vectors,
         )
 
     def search(self, queries, k):

@@ -4,7 +4,7 @@ from src.abstract_vector_index import AbstractVectorIndex
 
 class LanceDBFlatIndex(AbstractVectorIndex):
 
-    def __init__(self, d, metric_type="l2", db_path="./lancedb_flat_bench"):
+    def __init__(self, d, metric_type="l2", db_path="/Users/yoonoh/Desktop/CS 492/lancedb_cache/lancedb_flat_bench"):
         self.d = d
         self.metric_type = metric_type
         self.db = lancedb.connect(db_path)
