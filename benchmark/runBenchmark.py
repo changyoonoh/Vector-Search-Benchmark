@@ -28,7 +28,7 @@ def load_dataset(path):
         neighbors = f["neighbors"][:].astype("int64") if "neighbors" in f else None
     return data, queries, neighbors
 
-def run_benchmark(index, data, queries, k=5, latency_queries=100):
+def run_benchmark(index, data, queries, k=10, latency_queries=100):
     t0 = time.perf_counter()
 
     index.train(data)
@@ -89,9 +89,9 @@ def get_family(name):
 
 def main():
     datasets = [
-        ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000]),
-        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000]),
-        ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [1000,  5000,  10000,  30000,  50000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 1000000]),
+        # ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",         "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 1000000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
     index_factories = [ #using factories to make loop simpler, factory is just assiging similar but different stuff to a function so that we call it easier later
@@ -173,8 +173,8 @@ def main():
 
             for IndexTypeName, make_index in active_factories:
                 index = make_index(d)
-                tt, bt, st, I, lat = run_benchmark(index, data, queries, k=5)
-                recall = compute_recall(I, neighbors, k=5) if neighbors is not None else None
+                tt, bt, st, I, lat = run_benchmark(index, data, queries, k=10)
+                recall = compute_recall(I, neighbors, k=10) if neighbors is not None else None
                 print(IndexTypeName, tt, bt, st, f"recall={recall:.3f}" if recall is not None else "", f"latency={lat:.3f}ms")
                 results[IndexTypeName]["train"].append(tt)
                 results[IndexTypeName]["build"].append(bt)
@@ -184,18 +184,20 @@ def main():
 
         size_labels = [f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
 
-        # Assign a distinct color to each index (tab20 supports up to 20)
+        # Assign a distinct color and marker to each index
         cmap = plt.colormaps["tab20"]
-        color_map = {name: cmap(i / max(len(active_factories) - 1, 1)) for i, (name, _) in enumerate(active_factories)}
+        markers = ["o", "s", "^", "D", "v", "P", "X", "*", "h", "+", "x", "p", "H", "<", ">", "1", "2", "3", "4", "8"]
+        color_map  = {name: cmap(i / max(len(active_factories) - 1, 1)) for i, (name, _) in enumerate(active_factories)}
+        marker_map = {name: markers[i % len(markers)] for i, (name, _) in enumerate(active_factories)}
 
         # Recall — bar chart at the largest size only
         fig, ax = plt.subplots(figsize=(12, 5))
-        fig.suptitle(f"Recall@5 at n={sizes[-1]:,} — {ds_name}")
+        fig.suptitle(f"Recall@10 at n={sizes[-1]:,} — {ds_name}")
         names  = [n for n, _ in active_factories if results[n]["recall"][-1] is not None]
         values = [results[n]["recall"][-1] for n in names]
         colors = [color_map[n] for n in names]
         ax.bar(names, values, color=colors)
-        ax.set_ylabel("Recall@5")
+        ax.set_ylabel("Recall@10")
         ax.set_ylim(0, 1)
         ax.tick_params(axis="x", rotation=45)
         plt.tight_layout(rect=[0, 0, 1, 0.95])
@@ -212,7 +214,7 @@ def main():
             for name, _ in active_factories:
                 vals = results[name][metric_key]
                 if any(v is not None for v in vals):
-                    ax.plot(sizes, vals, label=name, marker="o", color=color_map[name])
+                    ax.plot(sizes, vals, label=name, marker=marker_map[name], color=color_map[name])
             ax.set_xlabel("Number of Vectors")
             ax.set_ylabel(ylabel)
             ax.set_yscale("log")
