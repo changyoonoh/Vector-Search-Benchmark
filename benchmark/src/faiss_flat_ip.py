@@ -7,6 +7,7 @@ class FaissFlatIPIndex(AbstractVectorIndex):
         self.index = faiss.IndexFlatIP(d)
 
     def add(self, data):
+        # TODO: Normalize data for cosine similarity
         self.index.add(data)
 
     def search(self, queries, k):
