@@ -1,4 +1,5 @@
 import faiss
+import numpy as np
 from src.abstract_vector_index import AbstractVectorIndex
 
 class FaissScalarQuantizerIPIndex(AbstractVectorIndex):
@@ -7,11 +8,17 @@ class FaissScalarQuantizerIPIndex(AbstractVectorIndex):
         self.index = faiss.IndexScalarQuantizer(d, faiss.ScalarQuantizer.QT_8bit, faiss.METRIC_INNER_PRODUCT)
 
     def train(self, data):
+        data = data.copy()
+        faiss.normalize_L2(data)
         self.index.train(data)
 
     def add(self, data):
+        data = data.copy()
+        faiss.normalize_L2(data)
         self.index.add(data)
 
     def search(self, queries, k):
+        queries = queries.copy()
+        faiss.normalize_L2(queries)
         return self.index.search(queries, k)
     

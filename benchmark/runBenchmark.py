@@ -122,11 +122,11 @@ def main():
     ("Weaviate_Cosine",   lambda d: WeaviateIndex(d, metric_type="cosine")),
 
     # --- EMBEDDED | ON-DISK | BATCHED ---
-    # LanceDB
-    ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2")),
-    ("LanceDB_FLAT_Cosine", lambda d: LanceDBFlatIndex(d, metric_type="cosine")),
-    ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2")),
-    ("LanceDB_IVF_Cosine",  lambda d: LanceDBIVFIndex(d, metric_type="cosine")),
+    # LanceDB (commented out for now)
+    # ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2")),
+    # ("LanceDB_FLAT_Cosine", lambda d: LanceDBFlatIndex(d, metric_type="cosine")),
+    # ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2")),
+    # ("LanceDB_IVF_Cosine",  lambda d: LanceDBIVFIndex(d, metric_type="cosine")),
 
     # --- SERVER-CLIENT | IN-MEMORY | BATCHED --- (requires Docker, commented out for quick runs)
     # ("Milvus_FLAT_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="FLAT")),

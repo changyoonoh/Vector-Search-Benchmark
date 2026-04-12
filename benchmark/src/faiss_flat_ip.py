@@ -1,4 +1,5 @@
 import faiss
+import numpy as np
 from src.abstract_vector_index import AbstractVectorIndex
 
 class FaissFlatIPIndex(AbstractVectorIndex):
@@ -7,8 +8,11 @@ class FaissFlatIPIndex(AbstractVectorIndex):
         self.index = faiss.IndexFlatIP(d)
 
     def add(self, data):
-        # TODO: Normalize data for cosine similarity
+        data = data.copy()
+        faiss.normalize_L2(data)
         self.index.add(data)
 
     def search(self, queries, k):
+        queries = queries.copy()
+        faiss.normalize_L2(queries)
         return self.index.search(queries, k)
