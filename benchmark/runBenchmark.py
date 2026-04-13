@@ -53,6 +53,9 @@ def run_benchmark(index, data, queries, k=10, latency_queries=100):
         latencies.append((time.perf_counter() - t_start) * 1000)
     latency_ms = float(np.median(latencies))
 
+    if hasattr(index, "close"):
+        index.close()
+
     return train_time, build_time, search_time, I, latency_ms
 
 def good_pq_m(d):

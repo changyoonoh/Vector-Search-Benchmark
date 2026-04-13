@@ -4,9 +4,10 @@ from src.abstract_vector_index import AbstractVectorIndex
 
 class AnnoyIndex(AbstractVectorIndex):
 
-    def __init__(self, d, metric_type="euclidean", n_trees=10):
+    def __init__(self, d, metric_type="euclidean", n_trees=100, search_k=None):
         self.d = d
         self.n_trees = n_trees
+        self.search_k = search_k if search_k is not None else n_trees * 10
         self.metric = "euclidean" if metric_type == "l2" else "angular"
         self.index = AnnoyLibIndex(d, self.metric)
 
@@ -23,7 +24,7 @@ class AnnoyIndex(AbstractVectorIndex):
 
         for q in queries:
             ids, distances = self.index.get_nns_by_vector(
-                q.tolist(), k, include_distances=True
+                q.tolist(), k, search_k=self.search_k, include_distances=True
             )
             all_I.append(ids)
             all_D.append(distances)

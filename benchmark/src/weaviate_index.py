@@ -49,6 +49,8 @@ class WeaviateIndex(AbstractVectorIndex):
             all_D.append([o.metadata.distance for o in results.objects])
             all_I.append([o.properties["doc_id"] for o in results.objects])
 
-        self.client.close()
         return np.array(all_D, dtype=np.float32), np.array(all_I, dtype=np.int64)
+
+    def close(self):
+        self.client.close()
     
