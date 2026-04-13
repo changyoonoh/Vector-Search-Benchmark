@@ -91,7 +91,7 @@ def main():
 
     datasets = [
         ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000, 1000000]),
-        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1000000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1183514]),
         ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
@@ -173,16 +173,23 @@ def main():
             print("Data Size =", n)
 
             for IndexTypeName, make_index in active_factories:
-                index = make_index(d)
-                bt, st, I, lat = run_benchmark(index, data, queries, k=10)
-                recall = compute_recall(I, neighbors, k=10) if neighbors is not None else None
-                print(IndexTypeName, bt, st, f"recall={recall:.3f}" if recall is not None else "", f"latency={lat:.3f}ms")
-                results[IndexTypeName]["build"].append(bt)
-                results[IndexTypeName]["search"].append(st)
-                results[IndexTypeName]["recall"].append(recall)
-                results[IndexTypeName]["latency_ms"].append(lat)
+                try:
+                    index = make_index(d)
+                    bt, st, I, lat = run_benchmark(index, data, queries, k=10)
+                    recall = compute_recall(I, neighbors, k=10) if neighbors is not None else None
+                    print(IndexTypeName, bt, st, f"recall={recall:.3f}" if recall is not None else "", f"latency={lat:.3f}ms")
+                    results[IndexTypeName]["build"].append(bt)
+                    results[IndexTypeName]["search"].append(st)
+                    results[IndexTypeName]["recall"].append(recall)
+                    results[IndexTypeName]["latency_ms"].append(lat)
+                except Exception as e:
+                    print(f"ERROR — {IndexTypeName} at n={n}: {e}")
+                    results[IndexTypeName]["build"].append(None)
+                    results[IndexTypeName]["search"].append(None)
+                    results[IndexTypeName]["recall"].append(None)
+                    results[IndexTypeName]["latency_ms"].append(None)
 
-        size_labels = ["1M" if n == 1000000 else f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
+        size_labels = ["1M" if n == 1000000 else "1.18M" if n == 1183514 else f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
 
         out_dir = os.path.join("results", timestamp, ds_name)
         os.makedirs(out_dir, exist_ok=True)
