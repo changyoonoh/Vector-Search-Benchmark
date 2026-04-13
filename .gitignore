@@ -6,3 +6,5 @@ lancedb_flat_bench/
 lancedb_ivf_bench/
 lance_test_db/
 __pycache__/
+results/
+.DS_Store

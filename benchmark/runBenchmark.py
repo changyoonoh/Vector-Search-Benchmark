@@ -1,4 +1,6 @@
+import os
 import time
+from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
@@ -91,6 +93,8 @@ def get_family(name):
     return families.get(prefix, prefix)
 
 def main():
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+
     datasets = [
         ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 1000000]),
         # ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",         "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 1000000]),
@@ -187,6 +191,9 @@ def main():
 
         size_labels = [f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
 
+        out_dir = os.path.join("results", timestamp, ds_name)
+        os.makedirs(out_dir, exist_ok=True)
+
         # Assign a distinct color and marker to each index
         cmap = plt.colormaps["tab20"]
         markers = ["o", "s", "^", "D", "v", "P", "X", "*", "h", "+", "x", "p", "H", "<", ">", "1", "2", "3", "4", "8"]
@@ -204,6 +211,8 @@ def main():
         ax.set_ylim(0, 1)
         ax.tick_params(axis="x", rotation=45)
         plt.tight_layout(rect=[0, 0, 1, 0.95])
+        plt.savefig(os.path.join(out_dir, "recall.png"), dpi=150)
+        plt.close()
 
         # Time-based plots — all indexes on one graph per metric
         for metric_key, ylabel, title_prefix in [
@@ -226,8 +235,8 @@ def main():
             ax.set_xticklabels(size_labels)
             ax.tick_params(axis="x", rotation=45)
             plt.tight_layout(rect=[0, 0, 1, 0.95])
-
-        plt.show()
+            plt.savefig(os.path.join(out_dir, f"{metric_key}.png"), dpi=150)
+            plt.close()
 
 if __name__ == "__main__": # the __name__ is ___main__ here only within this file, so this makes this only runnable directly, not when imported, prevents accidential execution?
     main()
