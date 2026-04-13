@@ -40,6 +40,7 @@ def run_benchmark(index, data, queries, k=10, latency_queries=100):
     t1 = time.perf_counter()
     _, I = index.search(queries, k)
     search_time = time.perf_counter() - t1
+    #TODO: Divide it by number of queries to get time per query? Remember 
 
     # Single-query latency: run each query individually, take median in ms
     latencies = []
@@ -54,6 +55,7 @@ def run_benchmark(index, data, queries, k=10, latency_queries=100):
 
     return build_time, search_time, I, latency_ms
 
+# Returns the largest m in [8,4,2,1] that evenly divides d, required by Milvus IVF_PQ
 def good_pq_m(d):
     for m in [8, 4, 2, 1]:
         if d % m == 0:
@@ -86,6 +88,8 @@ def get_family(name):
     }
     return families.get(prefix, prefix)
 
+#### TODO: change this part so that dataset path would be good for anyone else, not just you, maybe by using relative paths and putting the data within the repo? or at least making it a config file or something instead of hardcoding it here
+#### use argparse, create parser arguments
 def main():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
