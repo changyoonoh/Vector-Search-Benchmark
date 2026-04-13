@@ -36,7 +36,7 @@ services:
       retries: 3
 
   milvus:
-    image: milvusdb/milvus:v2.4.0
+    image: milvusdb/milvus:v2.6.11
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -68,7 +68,7 @@ services:
 
   # --- Elasticsearch ---
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -102,7 +102,7 @@ services:
 
   # --- Meilisearch ---
   meilisearch:
-    image: getmeili/meilisearch:v1.13
+    image: getmeili/meilisearch:v1.36.0
     environment:
       MEILI_NO_ANALYTICS: "true"
     ports:

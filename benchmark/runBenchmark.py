@@ -91,7 +91,7 @@ def main():
 
     datasets = [
         ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 1000000]),
-        # ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",         "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 1000000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 1000000]),
         ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
@@ -123,35 +123,35 @@ def main():
     ("Weaviate_Cosine",   lambda d: WeaviateIndex(d, metric_type="cosine")),
 
     # --- EMBEDDED | ON-DISK | BATCHED ---
-    # LanceDB (commented out for now)
-    # ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2")),
-    # ("LanceDB_FLAT_Cosine", lambda d: LanceDBFlatIndex(d, metric_type="cosine")),
-    # ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2")),
-    # ("LanceDB_IVF_Cosine",  lambda d: LanceDBIVFIndex(d, metric_type="cosine")),
+    # LanceDB
+    ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2")),
+    ("LanceDB_FLAT_Cosine", lambda d: LanceDBFlatIndex(d, metric_type="cosine")),
+    ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2")),
+    ("LanceDB_IVF_Cosine",  lambda d: LanceDBIVFIndex(d, metric_type="cosine")),
 
-    # --- SERVER-CLIENT | IN-MEMORY | BATCHED --- (requires Docker, commented out for quick runs)
-    # ("Milvus_FLAT_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="FLAT")),
-    # ("Milvus_FLAT_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="FLAT")),
-    # ("Milvus_HNSW_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="HNSW")),
-    # ("Milvus_HNSW_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="HNSW")),
-    # ("Milvus_IVF_FLAT_L2",     lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_FLAT")),
-    # ("Milvus_IVF_FLAT_Cosine", lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_FLAT")),
-    # ("Milvus_IVF_SQ8_L2",      lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_SQ8")),
-    # ("Milvus_IVF_SQ8_Cosine",  lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_SQ8")),
-    # ("Milvus_IVF_PQ_L2",       lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
-    # ("Milvus_IVF_PQ_Cosine",   lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
+    # --- SERVER-CLIENT | IN-MEMORY | BATCHED --- (requires Docker)
+    ("Milvus_FLAT_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="FLAT")),
+    ("Milvus_FLAT_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="FLAT")),
+    ("Milvus_HNSW_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="HNSW")),
+    ("Milvus_HNSW_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="HNSW")),
+    ("Milvus_IVF_FLAT_L2",     lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_FLAT")),
+    ("Milvus_IVF_FLAT_Cosine", lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_FLAT")),
+    ("Milvus_IVF_SQ8_L2",      lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_SQ8")),
+    ("Milvus_IVF_SQ8_Cosine",  lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_SQ8")),
+    ("Milvus_IVF_PQ_L2",       lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
+    ("Milvus_IVF_PQ_Cosine",   lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
 
-    # --- SERVER-CLIENT | IN-MEMORY | PER-QUERY --- (requires Docker, commented out for quick runs)
-    # ("Redis_L2",               lambda d: RedisIndex(d, metric_type="l2")),
-    # ("Redis_Cosine",           lambda d: RedisIndex(d, metric_type="cosine")),
+    # --- SERVER-CLIENT | IN-MEMORY | PER-QUERY --- (requires Docker)
+    ("Redis_L2",               lambda d: RedisIndex(d, metric_type="l2")),
+    ("Redis_Cosine",           lambda d: RedisIndex(d, metric_type="cosine")),
 
-    # --- SERVER-CLIENT | ON-DISK | PER-QUERY --- (requires Docker, commented out for quick runs)
-    # ("Meili_L2",               lambda d: MeilisearchIndex(d)),
-    # ("Meili_Cosine",           lambda d: MeilisearchIndex(d)),
-    # ("ES_L2",                  lambda d: ElasticsearchIndex(d, metric_type="l2")),
-    # ("ES_Cosine",              lambda d: ElasticsearchIndex(d, metric_type="cosine")),
-    # ("PgVector_L2",            lambda d: PgvectorIndex(d, metric_type="l2")),
-    # ("PgVector_Cosine",        lambda d: PgvectorIndex(d, metric_type="cosine")),
+    # --- SERVER-CLIENT | ON-DISK | PER-QUERY --- (requires Docker)
+    ("Meili_L2",               lambda d: MeilisearchIndex(d)),
+    ("Meili_Cosine",           lambda d: MeilisearchIndex(d)),
+    ("ES_L2",                  lambda d: ElasticsearchIndex(d, metric_type="l2")),
+    ("ES_Cosine",              lambda d: ElasticsearchIndex(d, metric_type="cosine")),
+    ("PgVector_L2",            lambda d: PgvectorIndex(d, metric_type="l2")),
+    ("PgVector_Cosine",        lambda d: PgvectorIndex(d, metric_type="cosine")),
     ]
 
     for ds_path, ds_name, ds_metric, sizes in datasets:
