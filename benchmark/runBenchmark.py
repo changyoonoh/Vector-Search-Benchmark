@@ -31,25 +31,19 @@ def load_dataset(path):
     return data, queries, neighbors
 
 def run_benchmark(index, data, queries, k=10, latency_queries=100):
-    t0 = time.perf_counter()
-
     index.train(data)
-    t1 = time.perf_counter()
 
+    t0 = time.perf_counter()
     index.add(data)
-    t2 = time.perf_counter()
+    build_time = time.perf_counter() - t0
 
+    t1 = time.perf_counter()
     _, I = index.search(queries, k)
-    t3 = time.perf_counter()
-
-    train_time = t1 - t0
-    build_time = t2 - t1
-    search_time = t3 - t2
+    search_time = time.perf_counter() - t1
 
     # Single-query latency: run each query individually, take median in ms
-    single_queries = queries[:latency_queries]
     latencies = []
-    for q in single_queries:
+    for q in queries[:latency_queries]:
         t_start = time.perf_counter()
         index.search(q[np.newaxis], k)
         latencies.append((time.perf_counter() - t_start) * 1000)
@@ -58,7 +52,7 @@ def run_benchmark(index, data, queries, k=10, latency_queries=100):
     if hasattr(index, "close"):
         index.close()
 
-    return train_time, build_time, search_time, I, latency_ms
+    return build_time, search_time, I, latency_ms
 
 def good_pq_m(d):
     for m in [8, 4, 2, 1]:
@@ -172,7 +166,7 @@ def main():
         suffix = "_L2" if ds_metric == "l2" else "_Cosine"
         active_factories = [(name, make) for name, make in index_factories if name.endswith(suffix)]
 
-        results = {name: {"train": [], "build": [], "search": [], "recall": [], "latency_ms": []} for name, _ in active_factories}
+        results = {name: {"build": [], "search": [], "recall": [], "latency_ms": []} for name, _ in active_factories}
 
         for n in sizes:
             data = all_data[:n]
@@ -180,10 +174,9 @@ def main():
 
             for IndexTypeName, make_index in active_factories:
                 index = make_index(d)
-                tt, bt, st, I, lat = run_benchmark(index, data, queries, k=10)
+                bt, st, I, lat = run_benchmark(index, data, queries, k=10)
                 recall = compute_recall(I, neighbors, k=10) if neighbors is not None else None
-                print(IndexTypeName, tt, bt, st, f"recall={recall:.3f}" if recall is not None else "", f"latency={lat:.3f}ms")
-                results[IndexTypeName]["train"].append(tt)
+                print(IndexTypeName, bt, st, f"recall={recall:.3f}" if recall is not None else "", f"latency={lat:.3f}ms")
                 results[IndexTypeName]["build"].append(bt)
                 results[IndexTypeName]["search"].append(st)
                 results[IndexTypeName]["recall"].append(recall)
@@ -216,9 +209,8 @@ def main():
 
         # Time-based plots — all indexes on one graph per metric
         for metric_key, ylabel, title_prefix in [
-            ("search",     "Search time (s)",      "Search Time"),
-            ("build",      "Build time (s)",       "Build Time"),
-            ("train",      "Train time (s)",       "Train Time"),
+            ("search",     "Search time (s)",        "Search Time"),
+            ("build",      "Build time (s)",         "Build Time"),
             ("latency_ms", "Latency per query (ms)", "Single-Query Latency"),
         ]:
             fig, ax = plt.subplots(figsize=(12, 6))
