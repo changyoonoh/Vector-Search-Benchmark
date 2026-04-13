@@ -262,10 +262,10 @@ def main():
             ax.set_xticks(sizes)
             ax.set_xticklabels(size_labels)
             ax.xaxis.set_minor_locator(plt.NullLocator())
-            ax.legend(fontsize=7)
             ax.tick_params(axis="x", rotation=45)
-            plt.tight_layout(rect=[0, 0, 1, 0.95])
-            plt.savefig(os.path.join(out_dir, f"{metric_key}.png"), dpi=150)
+            legend = ax.legend(fontsize=7, loc="center left", bbox_to_anchor=(1.01, 0.5), borderaxespad=0)
+            plt.tight_layout(rect=[0, 0, 0.82, 0.95])
+            plt.savefig(os.path.join(out_dir, f"{metric_key}.png"), dpi=150, bbox_inches="tight")
             plt.close()
 
 if __name__ == "__main__": # the __name__ is ___main__ here only within this file, so this makes this only runnable directly, not when imported, prevents accidential execution?
