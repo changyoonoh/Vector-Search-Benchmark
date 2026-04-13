@@ -90,8 +90,8 @@ def main():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
     datasets = [
-        ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 1000000]),
-        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 1000000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000, 1000000]),
+        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1000000]),
         ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
@@ -182,7 +182,7 @@ def main():
                 results[IndexTypeName]["recall"].append(recall)
                 results[IndexTypeName]["latency_ms"].append(lat)
 
-        size_labels = [f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
+        size_labels = ["1M" if n == 1000000 else f"{n//1000}k" if n >= 1000 else str(n) for n in sizes]
 
         out_dir = os.path.join("results", timestamp, ds_name)
         os.makedirs(out_dir, exist_ok=True)
@@ -207,6 +207,35 @@ def main():
         plt.savefig(os.path.join(out_dir, "recall.png"), dpi=150)
         plt.close()
 
+        # Speed-recall tradeoff — all sizes on one plot, color by size
+        size_cmap = plt.colormaps["plasma"]
+        size_color = {n: size_cmap(i / max(len(sizes) - 1, 1)) for i, n in enumerate(sizes)}
+
+        fig, ax = plt.subplots(figsize=(13, 7))
+        fig.suptitle(f"Speed-Recall Tradeoff — {ds_name}")
+        for size_idx, n in enumerate(sizes):
+            for name, _ in active_factories:
+                recall = results[name]["recall"][size_idx]
+                search_time = results[name]["search"][size_idx]
+                if recall is None or search_time is None or search_time == 0:
+                    continue
+                qps = nq / search_time
+                sc = size_color[n]
+                ax.scatter(recall, qps, color=sc, marker=marker_map[name], s=80, zorder=3)
+                ax.annotate(name, (recall, qps), fontsize=5, textcoords="offset points", xytext=(4, 2))
+
+        # Legend for sizes
+        for n in sizes:
+            ax.scatter([], [], color=size_color[n], label=size_labels[sizes.index(n)], s=60)
+        ax.legend(title="Dataset size", fontsize=7, title_fontsize=8)
+        ax.set_xlabel("Recall@10")
+        ax.set_ylabel("Queries per second")
+        ax.set_yscale("log")
+        ax.set_xlim(0, 1)
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
+        plt.savefig(os.path.join(out_dir, "speed_recall.png"), dpi=150)
+        plt.close()
+
         # Time-based plots — all indexes on one graph per metric
         for metric_key, ylabel, title_prefix in [
             ("search",     "Search time (s)",        "Search Time"),
@@ -222,9 +251,11 @@ def main():
             ax.set_xlabel("Number of Vectors")
             ax.set_ylabel(ylabel)
             ax.set_yscale("log")
-            ax.legend(fontsize=7)
+            ax.set_xscale("log")
             ax.set_xticks(sizes)
             ax.set_xticklabels(size_labels)
+            ax.xaxis.set_minor_locator(plt.NullLocator())
+            ax.legend(fontsize=7)
             ax.tick_params(axis="x", rotation=45)
             plt.tight_layout(rect=[0, 0, 1, 0.95])
             plt.savefig(os.path.join(out_dir, f"{metric_key}.png"), dpi=150)
