@@ -1,5 +1,6 @@
 import os
 import time
+import argparse
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -88,15 +89,18 @@ def get_family(name):
     }
     return families.get(prefix, prefix)
 
-#### TODO: change this part so that dataset path would be good for anyone else, not just you, maybe by using relative paths and putting the data within the repo? or at least making it a config file or something instead of hardcoding it here
-#### use argparse, create parser arguments
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-dir", default="/Users/yoonoh/Desktop/CS 492/data", help="Path to folder containing HDF5 dataset files")
+    args = parser.parse_args()
+    data_dir = args.data_dir
+
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
     datasets = [
-        ("/Users/yoonoh/Desktop/CS 492/data/sift-128-euclidean.hdf5",         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000, 1000000]),
-        ("/Users/yoonoh/Desktop/CS 492/data/glove-100-angular.hdf5",           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1183514]),
-        ("/Users/yoonoh/Desktop/CS 492/data/fashion-mnist-784-euclidean.hdf5", "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
+        (os.path.join(data_dir, "sift-128-euclidean.hdf5"),         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000, 1000000]),
+        (os.path.join(data_dir, "glove-100-angular.hdf5"),           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1183514]),
+        (os.path.join(data_dir, "fashion-mnist-784-euclidean.hdf5"), "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
     index_factories = [ #using factories to make loop simpler, factory is just assiging similar but different stuff to a function so that we call it easier later
