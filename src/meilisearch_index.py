@@ -14,7 +14,7 @@ class MeilisearchIndex(AbstractVectorIndex):
         self.client = meilisearch.Client(host)
         self.index = self.client.index("bench_vectors_meili")
 
-        self.index.update_settings({
+        task = self.index.update_settings({
             "embedders": {
                 self.embedder: {
                     "source": "userProvided",
@@ -22,6 +22,7 @@ class MeilisearchIndex(AbstractVectorIndex):
                 }
             }
         })
+        self.client.wait_for_task(task.task_uid)
 
     def train(self, data):
         return
@@ -31,7 +32,8 @@ class MeilisearchIndex(AbstractVectorIndex):
             {"id": i, "_vectors": {self.embedder: vec.tolist()}}
             for i, vec in enumerate(data)
         ]
-        self.index.add_documents(docs)
+        task = self.index.add_documents(docs)
+        self.client.wait_for_task(task.task_uid)
 
     def search(self, queries, k):
         all_ids = []

@@ -41,7 +41,7 @@ class MilvusIndex(AbstractVectorIndex):
 
         schema = CollectionSchema(
             fields=[
-                FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True), #id is primary key for each record(each vector from our dataset), we need this in milvus
+                FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False), #id is primary key for each record(each vector from our dataset), we need this in milvus
                 FieldSchema(name="vec", dtype=DataType.FLOAT_VECTOR, dim=d), #
             ],
             description="benchmark vectors",
@@ -61,7 +61,8 @@ class MilvusIndex(AbstractVectorIndex):
         return  # FLAT doesn't train, so not needed for now
 
     def add(self, data):
-        self.col.insert([data.tolist()]) #While our data of vectors are arrays, milvus expects lists, so we will get list of lists, Q: what is the outer list for?
+        ids = list(range(len(data)))
+        self.col.insert([ids, data.tolist()]) #first field is id (0..n-1), second is the vector; outer list maps to schema field order
         self.col.flush() #This is needed mostly for benchmarking, because this will get the data perminently stored, not just temporarily in memory// It makes data written to disk & saved in storage
         self.col.load() #loads collection into memory so searching becomes faster
 
