@@ -91,75 +91,77 @@ def get_family(name):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-dir", default="/Users/yoonoh/Desktop/CS 492/data", help="Path to folder containing HDF5 dataset files")
+    parser.add_argument("--data-dir", required=True, help="Path to folder containing HDF5 dataset files")
+    parser.add_argument("--lancedb-dir", default=os.path.join(os.path.expanduser("~"), "lancedb_cache"), help="Path to folder for LanceDB on-disk storage")
     args = parser.parse_args()
     data_dir = args.data_dir
+    lancedb_dir = args.lancedb_dir
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
     datasets = [
         (os.path.join(data_dir, "sift-128-euclidean.hdf5"),         "sift-128-euclidean",         "l2",     [10000, 50000, 100000, 300000, 500000, 1000000]),
-        (os.path.join(data_dir, "glove-100-angular.hdf5"),           "glove-100-angular",          "cosine", [10000, 50000, 100000, 300000, 500000, 1183514]),
+        (os.path.join(data_dir, "glove-100-angular.hdf5"),           "glove-100-angular",          "angular", [10000, 50000, 100000, 300000, 500000, 1183514]),
         (os.path.join(data_dir, "fashion-mnist-784-euclidean.hdf5"), "fashion-mnist-784-euclidean","l2",     [5000, 10000, 30000, 60000]),
     ]
 
     index_factories = [ #using factories to make loop simpler, factory is just assiging similar but different stuff to a function so that we call it easier later
 
     # --- EMBEDDED | IN-MEMORY | BATCHED ---
-    # FAISS (HNSW is L2-only, no cosine variant available in the current class)
+    # FAISS (HNSW is L2-only, no angular variant available in the current class)
     ("Faiss_Flat_L2",     lambda d: FaissFlatL2Index(d)),
-    ("Faiss_Flat_Cosine", lambda d: FaissFlatIPIndex(d)),
+    ("Faiss_Flat_Angular", lambda d: FaissFlatIPIndex(d)),
     ("Faiss_HNSW_L2",     lambda d: FaissFlatHNSWIndex(d)),
     ("Faiss_SQ_L2",       lambda d: FaissScalarQuantizerL2Index(d)),
-    ("Faiss_SQ_Cosine",   lambda d: FaissScalarQuantizerIPIndex(d)),
+    ("Faiss_SQ_Angular",   lambda d: FaissScalarQuantizerIPIndex(d)),
     # Qdrant (in-memory mode via :memory:)
     ("Qdrant_L2",         lambda d: QdrantIndex(d, metric_type="l2")),
-    ("Qdrant_Cosine",     lambda d: QdrantIndex(d, metric_type="cosine")),
+    ("Qdrant_Angular",     lambda d: QdrantIndex(d, metric_type="cosine")),
     # Chroma (in-memory client)
     ("Chroma_L2",         lambda d: ChromaIndex(d, metric_type="l2")),
-    ("Chroma_Cosine",     lambda d: ChromaIndex(d, metric_type="cosine")),
+    ("Chroma_Angular",     lambda d: ChromaIndex(d, metric_type="cosine")),
     # Annoy
     ("Annoy_L2",          lambda d: AnnoyVecIndex(d, metric_type="l2")),
-    ("Annoy_Cosine",      lambda d: AnnoyVecIndex(d, metric_type="angular")),
+    ("Annoy_Angular",      lambda d: AnnoyVecIndex(d, metric_type="angular")),
     # HNSWLib
     ("HNSWLib_L2",        lambda d: HNSWLibIndex(d, metric_type="l2")),
-    ("HNSWLib_Cosine",    lambda d: HNSWLibIndex(d, metric_type="cosine")),
+    ("HNSWLib_Angular",    lambda d: HNSWLibIndex(d, metric_type="cosine")),
 
     # --- EMBEDDED | IN-MEMORY | BATCHED (spins up a local embedded server process) ---
     # Weaviate
     ("Weaviate_L2",       lambda d: WeaviateIndex(d, metric_type="l2")),
-    ("Weaviate_Cosine",   lambda d: WeaviateIndex(d, metric_type="cosine")),
+    ("Weaviate_Angular",   lambda d: WeaviateIndex(d, metric_type="cosine")),
 
     # --- EMBEDDED | ON-DISK | BATCHED ---
     # LanceDB
-    ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2")),
-    ("LanceDB_FLAT_Cosine", lambda d: LanceDBFlatIndex(d, metric_type="cosine")),
-    ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2")),
-    ("LanceDB_IVF_Cosine",  lambda d: LanceDBIVFIndex(d, metric_type="cosine")),
+    ("LanceDB_FLAT_L2",     lambda d: LanceDBFlatIndex(d, metric_type="l2",     db_path=os.path.join(lancedb_dir, "lancedb_flat_bench"))),
+    ("LanceDB_FLAT_Angular", lambda d: LanceDBFlatIndex(d, metric_type="cosine", db_path=os.path.join(lancedb_dir, "lancedb_flat_bench"))),
+    ("LanceDB_IVF_L2",      lambda d: LanceDBIVFIndex(d, metric_type="l2",      db_path=os.path.join(lancedb_dir, "lancedb_ivf_bench"))),
+    ("LanceDB_IVF_Angular",  lambda d: LanceDBIVFIndex(d, metric_type="cosine",  db_path=os.path.join(lancedb_dir, "lancedb_ivf_bench"))),
 
     # --- SERVER-CLIENT | IN-MEMORY | BATCHED --- (requires Docker)
     ("Milvus_FLAT_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="FLAT")),
-    ("Milvus_FLAT_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="FLAT")),
+    ("Milvus_FLAT_Angular",     lambda d: MilvusIndex(d, metric_type="IP", index_type="FLAT")),
     ("Milvus_HNSW_L2",         lambda d: MilvusIndex(d, metric_type="L2", index_type="HNSW")),
-    ("Milvus_HNSW_Cosine",     lambda d: MilvusIndex(d, metric_type="IP", index_type="HNSW")),
+    ("Milvus_HNSW_Angular",     lambda d: MilvusIndex(d, metric_type="IP", index_type="HNSW")),
     ("Milvus_IVF_FLAT_L2",     lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_FLAT")),
-    ("Milvus_IVF_FLAT_Cosine", lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_FLAT")),
+    ("Milvus_IVF_FLAT_Angular", lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_FLAT")),
     ("Milvus_IVF_SQ8_L2",      lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_SQ8")),
-    ("Milvus_IVF_SQ8_Cosine",  lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_SQ8")),
+    ("Milvus_IVF_SQ8_Angular",  lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_SQ8")),
     ("Milvus_IVF_PQ_L2",       lambda d: MilvusIndex(d, metric_type="L2", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
-    ("Milvus_IVF_PQ_Cosine",   lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
+    ("Milvus_IVF_PQ_Angular",   lambda d: MilvusIndex(d, metric_type="IP", index_type="IVF_PQ", index_params={"nlist": 128, "m": good_pq_m(d), "nbits": 8})),
 
     # --- SERVER-CLIENT | IN-MEMORY | PER-QUERY --- (requires Docker)
     ("Redis_L2",               lambda d: RedisIndex(d, metric_type="l2")),
-    ("Redis_Cosine",           lambda d: RedisIndex(d, metric_type="cosine")),
+    ("Redis_Angular",           lambda d: RedisIndex(d, metric_type="cosine")),
 
     # --- SERVER-CLIENT | ON-DISK | PER-QUERY --- (requires Docker)
     ("Meili_L2",               lambda d: MeilisearchIndex(d)),
-    ("Meili_Cosine",           lambda d: MeilisearchIndex(d)),
+    ("Meili_Angular",           lambda d: MeilisearchIndex(d)),
     ("ES_L2",                  lambda d: ElasticsearchIndex(d, metric_type="l2")),
-    ("ES_Cosine",              lambda d: ElasticsearchIndex(d, metric_type="cosine")),
+    ("ES_Angular",              lambda d: ElasticsearchIndex(d, metric_type="cosine")),
     ("PgVector_L2",            lambda d: PgvectorIndex(d, metric_type="l2")),
-    ("PgVector_Cosine",        lambda d: PgvectorIndex(d, metric_type="cosine")),
+    ("PgVector_Angular",        lambda d: PgvectorIndex(d, metric_type="cosine")),
     ]
 
     for ds_path, ds_name, ds_metric, sizes in datasets:
@@ -171,7 +173,7 @@ def main():
         neighbors = neighbors[:1000] if neighbors is not None else None
         nq        = len(queries)
 
-        suffix = "_L2" if ds_metric == "l2" else "_Cosine"
+        suffix = "_L2" if ds_metric == "l2" else "_Angular"
         active_factories = [(name, make) for name, make in index_factories if name.endswith(suffix)]
 
         results = {name: {"build": [], "search": [], "recall": [], "latency_ms": []} for name, _ in active_factories}
