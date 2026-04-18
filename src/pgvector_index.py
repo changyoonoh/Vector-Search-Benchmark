@@ -16,9 +16,8 @@ class PgvectorIndex(AbstractVectorIndex):
         self.conn.autocommit = True
         self.cur = self.conn.cursor()
 
-        register_vector(self.conn)
-
         self.cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        register_vector(self.conn)
         self.cur.execute("DROP TABLE IF EXISTS bench_vectors")
         self.cur.execute(f"CREATE TABLE bench_vectors (id integer, vector vector({d}))")
 

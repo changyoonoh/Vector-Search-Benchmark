@@ -61,6 +61,10 @@ class MilvusIndex(AbstractVectorIndex):
         return  # FLAT doesn't train, so not needed for now
 
     def add(self, data):
+        if self.metric_type == "IP":
+            data = data.copy()
+            norms = np.linalg.norm(data, axis=1, keepdims=True)
+            data = data / np.where(norms == 0, 1, norms)
         ids = list(range(len(data)))
         self.col.insert([ids, data.tolist()]) #first field is id (0..n-1), second is the vector; outer list maps to schema field order
         self.col.flush() #This is needed mostly for benchmarking, because this will get the data perminently stored, not just temporarily in memory// It makes data written to disk & saved in storage
@@ -74,6 +78,11 @@ class MilvusIndex(AbstractVectorIndex):
             search_params = {"ef": 64}
         else:
             search_params = {}
+
+        if self.metric_type == "IP":
+            queries = queries.copy()
+            norms = np.linalg.norm(queries, axis=1, keepdims=True)
+            queries = queries / np.where(norms == 0, 1, norms)
 
         res = self.col.search(
             data=queries.tolist(),
