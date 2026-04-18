@@ -8,17 +8,17 @@ import h5py
 
 def get_timeout(n):
     if n <= 10000:
-        return 600    # 10 min
+        return 180    #  3 min
     elif n <= 50000:
-        return 1200   # 20 min
+        return 600    # 10 min
     elif n <= 100000:
-        return 1800   # 30 min
+        return 1200   # 20 min
     elif n <= 300000:
-        return 3600   # 60 min
+        return 2700   # 45 min
     elif n <= 500000:
-        return 5400   # 90 min
+        return 4500   # 75 min
     else:
-        return 7200   # 2 hr (covers 1M, 1.18M, and anything larger)
+        return 7200   #  2 hr (covers 1M, 1.18M, and anything larger)
 
 from src.faiss_flat_l2 import FaissFlatL2Index
 from src.faiss_flat_ip import FaissFlatIPIndex
