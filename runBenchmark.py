@@ -20,23 +20,15 @@ def get_timeout(n):
     else:
         return 7200   #  2 hr (covers 1M, 1.18M, and anything larger)
 
-from src.faiss_flat_l2 import FaissFlatL2Index
-from src.faiss_flat_ip import FaissFlatIPIndex
-from src.faiss_flat_hnsw import FaissFlatHNSWIndex
-from src.faiss_sq_l2 import FaissScalarQuantizerL2Index
-from src.faiss_sq_ip import FaissScalarQuantizerIPIndex
-from src.milvus_index import MilvusIndex
-from src.meilisearch_index import MeilisearchIndex
-from src.lancedb_flat_index import LanceDBFlatIndex
-from src.lancedb_ivf_index import LanceDBIVFIndex
-from src.qdrant_index import QdrantIndex
-from src.weaviate_index import WeaviateIndex
-from src.chroma_index import ChromaIndex
-from src.redis_index import RedisIndex
-from src.elasticsearch_index import ElasticsearchIndex
-from src.annoy_index import AnnoyIndex as AnnoyVecIndex
-from src.pgvector_index import PgvectorIndex
-from src.hnswlib_index import HNSWLibIndex
+from src import (
+    FaissFlatL2Index, FaissFlatIPIndex, FaissFlatHNSWIndex,
+    FaissScalarQuantizerL2Index, FaissScalarQuantizerIPIndex,
+    MilvusIndex, MeilisearchIndex,
+    LanceDBFlatIndex, LanceDBIVFIndex,
+    QdrantIndex, WeaviateIndex, ChromaIndex,
+    RedisIndex, ElasticsearchIndex,
+    AnnoyIndex, PgvectorIndex, HNSWLibIndex,
+)
 from plot_results import plot_results
 
 def load_dataset(path):
@@ -136,8 +128,8 @@ def main():
     ("Chroma_L2",         lambda d: ChromaIndex(d, metric_type="l2")),
     ("Chroma_Angular",     lambda d: ChromaIndex(d, metric_type="cosine")),
     # Annoy
-    ("Annoy_L2",          lambda d: AnnoyVecIndex(d, metric_type="l2")),
-    ("Annoy_Angular",      lambda d: AnnoyVecIndex(d, metric_type="angular")),
+    ("Annoy_L2",          lambda d: AnnoyIndex(d, metric_type="l2")),
+    ("Annoy_Angular",      lambda d: AnnoyIndex(d, metric_type="angular")),
     # HNSWLib
     ("HNSWLib_L2",        lambda d: HNSWLibIndex(d, metric_type="l2")),
     ("HNSWLib_Angular",    lambda d: HNSWLibIndex(d, metric_type="cosine")),
