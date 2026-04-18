@@ -38,7 +38,7 @@ class PgvectorIndex(AbstractVectorIndex):
 
         for q in queries:
             self.cur.execute(
-                f"SELECT id, vector {op} %s AS distance FROM bench_vectors ORDER BY distance LIMIT %s",
+                f"SELECT id, vector {op} %s::vector AS distance FROM bench_vectors ORDER BY distance LIMIT %s",
                 (q.tolist(), k)
             )
             results = self.cur.fetchall()
