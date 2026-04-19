@@ -12,6 +12,16 @@ class MeilisearchIndex(AbstractVectorIndex):
         self.next_id = 0
 
         self.client = meilisearch.Client(host)
+
+        # Delete existing index if present so each run starts with a clean state
+        try:
+            task = self.client.delete_index("bench_vectors_meili")
+            self.client.wait_for_task(task.task_uid, timeout_in_ms=30000)
+        except meilisearch.errors.MeilisearchApiError:
+            pass  # index didn't exist yet
+
+        task = self.client.create_index("bench_vectors_meili", {"primaryKey": "id"})
+        self.client.wait_for_task(task.task_uid, timeout_in_ms=30000)
         self.index = self.client.index("bench_vectors_meili")
 
         task = self.index.update_settings({
