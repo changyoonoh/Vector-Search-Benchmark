@@ -28,12 +28,15 @@ class MeilisearchIndex(AbstractVectorIndex):
         return
 
     def add(self, data):
-        docs = [
-            {"id": i, "_vectors": {self.embedder: vec.tolist()}}
-            for i, vec in enumerate(data)
-        ]
-        task = self.index.add_documents(docs)
-        self.client.wait_for_task(task.task_uid)
+        # Insert in 5k-doc chunks to stay under the 100MB HTTP payload limit
+        chunk_size = 5000
+        for start in range(0, len(data), chunk_size):
+            chunk_docs = [
+                {"id": i, "_vectors": {self.embedder: data[i].tolist()}}
+                for i in range(start, min(start + chunk_size, len(data)))
+            ]
+            task = self.index.add_documents(chunk_docs)
+            self.client.wait_for_task(task.task_uid, timeout_in_ms=300000)
 
     def search(self, queries, k):
         all_ids = []

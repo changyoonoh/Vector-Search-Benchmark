@@ -65,8 +65,12 @@ class MilvusIndex(AbstractVectorIndex):
             data = data.copy()
             norms = np.linalg.norm(data, axis=1, keepdims=True)
             data = data / np.where(norms == 0, 1, norms)
-        ids = list(range(len(data)))
-        self.col.insert([ids, data.tolist()]) #first field is id (0..n-1), second is the vector; outer list maps to schema field order
+        # Insert in 50k-row chunks to stay under the 64MB gRPC message size limit
+        chunk_size = 50000
+        for start in range(0, len(data), chunk_size):
+            chunk = data[start:start + chunk_size]
+            ids = list(range(start, start + len(chunk)))
+            self.col.insert([ids, chunk.tolist()])
         self.col.flush() #This is needed mostly for benchmarking, because this will get the data perminently stored, not just temporarily in memory// It makes data written to disk & saved in storage
         self.col.load() #loads collection into memory so searching becomes faster
 

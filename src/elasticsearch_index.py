@@ -8,7 +8,7 @@ class ElasticsearchIndex(AbstractVectorIndex):
         self.d = d
         self.metric_type = metric_type
         self.index_name = "bench_vectors"
-        self.client = Elasticsearch("http://localhost:9200")
+        self.client = Elasticsearch("http://localhost:9200", request_timeout=300)
 
         similarity = "l2_norm" if metric_type == "l2" else "cosine"
 
@@ -33,11 +33,14 @@ class ElasticsearchIndex(AbstractVectorIndex):
         return
 
     def add(self, data):
-        ops = []
-        for i, vec in enumerate(data):
-            ops.append({"index": {"_index": self.index_name}})
-            ops.append({"id": i, "vector": vec.tolist()})
-        self.client.bulk(operations=ops)
+        # Insert in 5k-doc chunks to stay under the 100MB HTTP payload limit
+        chunk_size = 5000
+        for start in range(0, len(data), chunk_size):
+            ops = []
+            for i in range(start, min(start + chunk_size, len(data))):
+                ops.append({"index": {"_index": self.index_name}})
+                ops.append({"id": i, "vector": data[i].tolist()})
+            self.client.bulk(operations=ops)
         self.client.indices.refresh(index=self.index_name)
 
     def search(self, queries, k):
