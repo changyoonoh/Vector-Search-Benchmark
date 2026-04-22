@@ -159,13 +159,12 @@ as PNG plots. This folder is gitignored and will not be pushed to
 GitHub.
 
 ### Reproducing on a Cloud VM
-
-The full benchmark was run on a Google Cloud VM (n2-standard-8, 32GB RAM,
-100GB disk, Ubuntu 22.04). For a step-by-step guide to setting up and
-running the benchmark on a VM, see [VM_CHECKLIST.md](VM_CHECKLIST.md).
-
-Note that Docker containers do not auto-start after a VM restart —
-always verify with `docker ps` before running.
+ 
+The full benchmark was run on a Google Cloud VM with the following specs:
+n2-standard-8, 32GB RAM, 100GB disk, Ubuntu 22.04.
+ 
+For the recommended pre-run procedure — covering Docker verification,
+tmux setup, and result retrieval — see [VM_RUN_CHECKLIST.md](VM_RUN_CHECKLIST.md).
 
 ### Windows notes
 
