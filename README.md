@@ -245,15 +245,18 @@ higher latency at scale compared to in-memory systems.
 
 #### SIFT-128-euclidean (1,000,000 vectors · L2)
 
-<!-- INSERT: sift-128-euclidean/latency_ms_grouped.png -->
+<!-- INSERT: sift-128-euclidean/latency_ms_grouped.png --> <img width="3583" height="887" alt="latency_ms_grouped" src="https://github.com/user-attachments/assets/c8b07b6b-3b84-4b59-b641-9bfae57597b3" />
+
 
 #### GloVe-100-angular (1,183,514 vectors · Cosine)
 
-<!-- INSERT: glove-100-angular/latency_ms_grouped.png -->
+<!-- INSERT: glove-100-angular/latency_ms_grouped.png --> <img width="3580" height="887" alt="latency_ms_grouped" src="https://github.com/user-attachments/assets/6506fb01-739c-4bc5-b7bd-838d992948bb" />
+
 
 #### Fashion-MNIST-784-euclidean (60,000 vectors · L2)
 
-<!-- INSERT: fashion-mnist-784-euclidean/latency_ms_grouped.png -->
+<!-- INSERT: fashion-mnist-784-euclidean/latency_ms_grouped.png --> <img width="3583" height="887" alt="latency_ms_grouped" src="https://github.com/user-attachments/assets/95aec888-09dd-4861-a3a1-e4fcc5b66216" />
+
 
 ---
 
