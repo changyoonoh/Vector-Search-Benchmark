@@ -64,6 +64,11 @@ cd Vector-Search-Benchmark
 
 ### Step 2 — Install dependencies
 
+> **Linux only:** Annoy and HNSWLib require build tools. Run this before `poetry install`:
+> ```bash
+> sudo apt install -y build-essential
+> ```
+
 ```bash
 poetry install
 ```
@@ -125,16 +130,42 @@ This starts the following containers as defined in `docker-compose.yml`:
 > connection — no manual SQL setup needed.
 > Weaviate runs as an embedded process and does not require Docker.
 
-### Step 6 — Run the benchmark
+### Step 6 — Sanity check
+
+Before running the full benchmark, verify all indexes are working correctly:
+
+```bash
+# All 30 tests (requires Docker containers running)
+poetry run pytest tests/test_indexes.py -v -m "docker or not docker"
+
+# Embedded indexes only (no Docker required)
+poetry run pytest tests/test_indexes.py -v -m "not docker"
+```
+
+All tests should pass. A few expected behaviors:
+- **LanceDB IVF** tests require N > 256 vectors to train — they will fail if run on smaller synthetic data
+- **Meilisearch** uses a lower recall threshold (0.6 vs 0.8) by design, as it is primarily a text search engine
+- **Weaviate** is not supported on Windows — those tests will fail on Windows machines
+
+### Step 7 — Run the benchmark
 
 ```bash
 cd benchmark
-poetry run python runBenchmark.py
+poetry run python runBenchmark.py --data-dir /path/to/your/data
 ```
 
 Results are saved automatically to `results/{timestamp}/{dataset}/`
 as PNG plots. This folder is gitignored and will not be pushed to
 GitHub.
+
+### Reproducing on a Cloud VM
+
+The full benchmark was run on a Google Cloud VM (n2-standard-8, 32GB RAM,
+100GB disk, Ubuntu 22.04). For a step-by-step guide to setting up and
+running the benchmark on a VM, see [VM_CHECKLIST.md](VM_CHECKLIST.md).
+
+Note that Docker containers do not auto-start after a VM restart —
+always verify with `docker ps` before running.
 
 ### Windows notes
 
@@ -172,6 +203,67 @@ comes with the extension pre-installed. The wrapper enables it
 automatically via `CREATE EXTENSION IF NOT EXISTS vector` on first
 connection.
 
+## Known Limitations
+
+- **Milvus** — fails at large batch sizes due to a gRPC 64MB message limit. Affected runs are recorded as errors and excluded from plots.
+- **Meilisearch** — has a 100MB payload limit that affects ingestion at 300k+ vectors. Results beyond this scale are unreliable.
+- **Qdrant** — embedded (in-memory) mode degrades significantly beyond 20k vectors by design. Server mode is recommended for production use at scale.
+- **Weaviate** — embedded mode is not supported on Windows. Windows users should use the Docker-based server mode instead.
+
 ## Results
 
-Coming soon.
+### Build Time by Category
+
+Build time measures how long it takes to ingest all vectors into the
+index, broken out by architecture category. This is a one-time cost
+but matters significantly at scale — server-batched systems like
+Milvus pay a higher upfront cost than embedded in-memory systems.
+
+#### SIFT-128-euclidean (1,000,000 vectors · L2)
+
+<!-- INSERT: sift-128-euclidean/build_grouped.png -->
+
+#### GloVe-100-angular (1,183,514 vectors · Cosine)
+
+<!-- INSERT: glove-100-angular/build_grouped.png -->
+
+#### Fashion-MNIST-784-euclidean (60,000 vectors · L2)
+
+<!-- INSERT: fashion-mnist-784-euclidean/build_grouped.png -->
+
+---
+
+### Single-Query Latency by Category
+
+Median latency per query in milliseconds, measured over 100 individual
+queries. This reflects real-world query cost more accurately than
+aggregate search time. On-disk systems like LanceDB show dramatically
+higher latency at scale compared to in-memory systems.
+
+#### SIFT-128-euclidean (1,000,000 vectors · L2)
+
+<!-- INSERT: sift-128-euclidean/latency_ms_grouped.png -->
+
+#### GloVe-100-angular (1,183,514 vectors · Cosine)
+
+<!-- INSERT: glove-100-angular/latency_ms_grouped.png -->
+
+#### Fashion-MNIST-784-euclidean (60,000 vectors · L2)
+
+<!-- INSERT: fashion-mnist-784-euclidean/latency_ms_grouped.png -->
+
+---
+
+### Speed-Recall Tradeoff
+
+> Coming soon — plots are being updated for improved formatting.
+
+---
+
+## Roadmap
+
+**FastAPI Search Service**
+Expose any benchmarked index as a deployable REST API endpoint using FastAPI. The service will accept a query vector via HTTP POST and return the top-k nearest neighbors from a selected index. This transforms the benchmark from a measurement tool into a production-ready search backend, demonstrating real deployment capability beyond just performance analysis.
+
+**Filtered Search Benchmark**
+Extend the benchmark to measure how performance and recall change when search is restricted to a metadata-filtered subset of vectors — which is how vector search is used in almost every real production application. Fashion-MNIST will use its real clothing category labels (t-shirt, trouser, dress, etc.); SIFT and GloVe will use simulated category assignments. Metrics will include how much search speed and recall degrade as filter selectivity increases.
