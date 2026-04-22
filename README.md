@@ -221,15 +221,18 @@ Milvus pay a higher upfront cost than embedded in-memory systems.
 
 #### SIFT-128-euclidean (1,000,000 vectors · L2)
 
-<!-- INSERT: sift-128-euclidean/build_grouped.png -->
+<!-- INSERT: sift-128-euclidean/build_grouped.png --> <img width="3583" height="887" alt="build_grouped" src="https://github.com/user-attachments/assets/b4e0ed15-a1e9-4765-ad8f-8f8bd7f464f0" />
+
 
 #### GloVe-100-angular (1,183,514 vectors · Cosine)
 
-<!-- INSERT: glove-100-angular/build_grouped.png -->
+<!-- INSERT: glove-100-angular/build_grouped.png --> <img width="3580" height="887" alt="build_grouped" src="https://github.com/user-attachments/assets/7da98db3-432e-40d5-b664-054a7f8bfa5a" />
+
 
 #### Fashion-MNIST-784-euclidean (60,000 vectors · L2)
 
-<!-- INSERT: fashion-mnist-784-euclidean/build_grouped.png -->
+<!-- INSERT: fashion-mnist-784-euclidean/build_grouped.png --> <img width="3583" height="887" alt="build_grouped" src="https://github.com/user-attachments/assets/1a1a1184-9c92-48a5-91b4-ca410481bdcf" />
+
 
 ---
 
