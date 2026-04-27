@@ -1,5 +1,6 @@
 import numpy as np
 import psycopg2
+from psycopg2.extras import execute_values
 from pgvector.psycopg2 import register_vector
 from src.abstract_vector_index import AbstractVectorIndex
 
@@ -29,10 +30,13 @@ class PgvectorIndex(AbstractVectorIndex):
         return
 
     def add(self, data):
-        for i, vec in enumerate(data):
-            self.cur.execute(
-                "INSERT INTO bench_vectors (id, vector) VALUES (%s, %s)",
-                (i, vec.tolist())
+        chunk_size = 5000
+        for start in range(0, len(data), chunk_size):
+            end = min(start + chunk_size, len(data))
+            execute_values(
+                self.cur,
+                "INSERT INTO bench_vectors (id, vector) VALUES %s",
+                [(i, data[i].tolist()) for i in range(start, end)],
             )
 
         if self.index_type == "hnsw":

@@ -30,9 +30,13 @@ def _build_color_marker_maps(tunable_results, non_tunable_results):
 
 def _draw_group(ax, tunable_names, non_tunable_names, tunable_results, non_tunable_results, color_map, marker_map):
     for name in tunable_names:
-        if name not in tunable_results or not tunable_results[name]:
+        if name not in tunable_results:
             continue
-        pts = tunable_results[name]
+        # Drop points where timeout/error produced None recall or qps
+        pts = [p for p in tunable_results[name]
+               if p.get("recall") is not None and p.get("qps") is not None]
+        if not pts:
+            continue
         recalls = [p["recall"] for p in pts]
         qps_list = [p["qps"] for p in pts]
         ax.plot(recalls, qps_list, color=color_map[name], marker=marker_map[name],
