@@ -25,7 +25,7 @@ from src import (
     FaissScalarQuantizerL2Index, FaissScalarQuantizerIPIndex,
     MilvusIndex, MeilisearchIndex,
     LanceDBFlatIndex, LanceDBIVFIndex,
-    QdrantIndex, WeaviateIndex, ChromaIndex,
+    WeaviateIndex, ChromaIndex,  # QdrantIndex commented out
     RedisIndex, ElasticsearchIndex,
     AnnoyIndex, PgvectorIndex, HNSWLibIndex,
 )
@@ -121,9 +121,9 @@ def main():
     ("Faiss_HNSW_L2",     lambda d: FaissFlatHNSWIndex(d)),
     ("Faiss_SQ_L2",       lambda d: FaissScalarQuantizerL2Index(d)),
     ("Faiss_SQ_Angular",   lambda d: FaissScalarQuantizerIPIndex(d)),
-    # Qdrant (in-memory mode via :memory:)
-    ("Qdrant_L2",         lambda d: QdrantIndex(d, metric_type="l2")),
-    ("Qdrant_Angular",     lambda d: QdrantIndex(d, metric_type="cosine")),
+    # Qdrant (in-memory mode via :memory:) — commented out; too slow >20k, consider server-client version
+    # ("Qdrant_L2",         lambda d: QdrantIndex(d, metric_type="l2")),
+    # ("Qdrant_Angular",     lambda d: QdrantIndex(d, metric_type="cosine")),
     # Chroma (in-memory client)
     ("Chroma_L2",         lambda d: ChromaIndex(d, metric_type="l2")),
     ("Chroma_Angular",     lambda d: ChromaIndex(d, metric_type="cosine")),

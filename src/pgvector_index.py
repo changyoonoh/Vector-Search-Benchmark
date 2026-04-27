@@ -5,9 +5,13 @@ from src.abstract_vector_index import AbstractVectorIndex
 
 class PgvectorIndex(AbstractVectorIndex):
 
-    def __init__(self, d, metric_type="l2"):
+    def __init__(self, d, metric_type="l2", index_type="flat", m=16, ef_construction=200, ef_search=200):
         self.d = d
         self.metric_type = metric_type
+        self.index_type = index_type
+        self.m = m
+        self.ef_construction = ef_construction
+        self.ef_search = ef_search
 
         self.conn = psycopg2.connect(
             host="localhost", port=5432,
@@ -31,10 +35,20 @@ class PgvectorIndex(AbstractVectorIndex):
                 (i, vec.tolist())
             )
 
+        if self.index_type == "hnsw":
+            ops = "vector_l2_ops" if self.metric_type == "l2" else "vector_cosine_ops"
+            self.cur.execute(
+                f"CREATE INDEX ON bench_vectors USING hnsw (vector {ops}) "
+                f"WITH (m = {self.m}, ef_construction = {self.ef_construction})"
+            )
+
     def search(self, queries, k):
         all_D, all_I = [], []
 
         op = "<->" if self.metric_type == "l2" else "<=>"
+
+        if self.index_type == "hnsw":
+            self.cur.execute(f"SET hnsw.ef_search = {self.ef_search}")
 
         for q in queries:
             self.cur.execute(
@@ -46,3 +60,6 @@ class PgvectorIndex(AbstractVectorIndex):
             all_D.append([r[1] for r in results])
 
         return np.array(all_D, dtype=np.float32), np.array(all_I, dtype=np.int64)
+
+    def set_query_params(self, params):
+        self.ef_search = params.get("ef_search", self.ef_search)

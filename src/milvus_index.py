@@ -34,6 +34,9 @@ class MilvusIndex(AbstractVectorIndex):
             else:
                 raise ValueError(f"Unsupported Milvus index_type: {index_type}")
 
+        self.search_nprobe = 16
+        self.search_ef = 64
+
         connections.connect(host=host, port=port)
 
         if utility.has_collection(collection_name): #If we don't have this multiple Benchmark runs would produce wrong results, repeated runs would reuse old data
@@ -77,9 +80,9 @@ class MilvusIndex(AbstractVectorIndex):
     def search(self, queries, k):
 
         if self.index_type in ("IVF_FLAT", "IVF_SQ8", "IVF_PQ"):
-            search_params = {"nprobe": 16}
+            search_params = {"nprobe": self.search_nprobe}
         elif self.index_type == "HNSW":
-            search_params = {"ef": 64}
+            search_params = {"ef": self.search_ef}
         else:
             search_params = {}
 
@@ -98,3 +101,9 @@ class MilvusIndex(AbstractVectorIndex):
         D = np.array([[hit.distance for hit in hits] for hits in res], dtype=np.float32)
         I = np.array([[hit.id for hit in hits] for hits in res], dtype=np.int64)
         return D, I
+
+    def set_query_params(self, params):
+        if "nprobe" in params:
+            self.search_nprobe = params["nprobe"]
+        if "ef" in params:
+            self.search_ef = params["ef"]

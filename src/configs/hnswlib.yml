@@ -1,0 +1,5 @@
+args:
+  M: 16
+  ef_construction: 200
+query_args:
+  ef: [10, 20, 40, 80, 120, 200, 400, 800, 1500, 2000]

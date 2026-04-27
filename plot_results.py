@@ -82,54 +82,6 @@ def plot_results(results, active_factories, sizes, size_labels, ds_name, nq, out
     plt.savefig(os.path.join(out_dir, "recall_grouped.png"), dpi=150, bbox_inches="tight")
     plt.close()
 
-    # ── Speed-recall helpers ──────────────────────────────────────────────
-    size_cmap = plt.colormaps["plasma"]
-    size_color = {n: size_cmap(i / max(len(sizes) - 1, 1)) for i, n in enumerate(sizes)}
-    all_factory_names = [n for n, _ in active_factories]
-
-    def _plot_speed_recall(ax, factory_names):
-        for size_idx, n in enumerate(sizes):
-            for name in factory_names:
-                recall = results[name]["recall"][size_idx]
-                search_time = results[name]["search"][size_idx]
-                if recall is None or search_time is None or search_time == 0:
-                    continue
-                qps = nq / search_time
-                ax.scatter(recall, qps, color=size_color[n], marker=marker_map[name], s=80, zorder=3)
-                ax.annotate(name, (recall, qps), fontsize=5, textcoords="offset points", xytext=(4, 2))
-        ax.set_xlabel("Recall@10")
-        ax.set_ylabel("Queries per second")
-        ax.set_yscale("log")
-        ax.set_xlim(0, 1)
-        ax.grid(True, alpha=0.3)
-
-    def _add_speed_recall_legends(ax, factory_names):
-        size_handles = [ax.scatter([], [], color=size_color[n], label=size_labels[sizes.index(n)], s=60) for n in sizes]
-        size_legend = ax.legend(handles=size_handles, title="Dataset size", fontsize=7, title_fontsize=8, loc="upper left")
-        ax.add_artist(size_legend)
-        marker_handles = [ax.scatter([], [], color="gray", marker=marker_map[name], s=60, label=name) for name in factory_names]
-        ax.legend(handles=marker_handles, title="Index", fontsize=6, title_fontsize=7, loc="center left", bbox_to_anchor=(1.01, 0.5), borderaxespad=0)
-
-    # ── Speed-recall — all indexes ────────────────────────────────────────
-    fig, ax = plt.subplots(figsize=(13, 7))
-    fig.suptitle(f"Speed-Recall Tradeoff — {ds_name}")
-    _plot_speed_recall(ax, all_factory_names)
-    _add_speed_recall_legends(ax, all_factory_names)
-    plt.tight_layout(rect=[0, 0, 0.82, 0.95])
-    plt.savefig(os.path.join(out_dir, "speed_recall.png"), dpi=150, bbox_inches="tight")
-    plt.close()
-
-    # ── Speed-recall — per category ───────────────────────────────────────
-    for cat_key, idx_names in cat_indexes.items():
-        cat_label, _, _ = categories[cat_key]
-        fig, ax = plt.subplots(figsize=(10, 6))
-        fig.suptitle(f"Speed-Recall Tradeoff — {ds_name} — {cat_label}")
-        _plot_speed_recall(ax, idx_names)
-        _add_speed_recall_legends(ax, idx_names)
-        plt.tight_layout(rect=[0, 0, 0.82, 0.95])
-        plt.savefig(os.path.join(out_dir, f"speed_recall_{cat_key}.png"), dpi=150, bbox_inches="tight")
-        plt.close()
-
     # ── Time-based plots ──────────────────────────────────────────────────
     n_cats = len(cat_indexes)
 

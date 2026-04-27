@@ -30,3 +30,6 @@ class AnnoyIndex(AbstractVectorIndex):
             all_D.append(distances)
 
         return np.array(all_D, dtype=np.float32), np.array(all_I, dtype=np.int64)
+
+    def set_query_params(self, params):
+        self.search_k = params.get("search_k", self.search_k)
