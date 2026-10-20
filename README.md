@@ -135,12 +135,38 @@ This starts the following containers as defined in `docker-compose.yml`:
 Before running the full benchmark, verify all indexes are working correctly:
 
 ```bash
-# All 30 tests (requires Docker containers running)
+# All tests (requires Docker services and embedded Weaviate support)
 poetry run pytest tests/test_indexes.py -v -m "docker or not docker"
 
-# Embedded indexes only (no Docker required)
-poetry run pytest tests/test_indexes.py -v -m "not docker"
+# In-process and on-disk indexes only (no service processes)
+poetry run pytest tests/test_indexes.py -v -m local
 ```
+
+### Continuous integration
+
+GitHub Actions runs the five FAISS correctness cases on every push and pull
+request using Ubuntu 24.04, Python 3.12, Poetry 2.3.1, and `poetry.lock`.
+Installation, environment versions, and verbose pytest results appear as
+separate workflow steps. Reproduce the CI test selection with:
+
+```bash
+poetry run pytest tests/test_indexes.py -m "faiss and local and not external_service" --strict-markers -v -ra
+```
+
+The seeded synthetic dataset contains 300 vectors with 32 dimensions and
+10 queries. Tests check L2 and cosine recall for Flat, HNSW, and scalar
+quantization indexes; they do not download benchmark datasets or start services.
+All project dependencies are still installed because `src/__init__.py` imports
+every backend.
+
+Markers distinguish `local` (no service process), `external_service`
+(including embedded Weaviate), `docker` (the Docker service subset), and
+`faiss` (the initial CI subset). Thus `not docker` still includes Weaviate;
+use `local` when no service process should run.
+
+This CI does not validate other backends, Docker/embedded services, large
+datasets, benchmark timings, or published performance results. The benchmark
+commands and existing results are unchanged.
 
 All tests should pass. A few expected behaviors:
 - **LanceDB IVF** tests require N > 256 vectors to train — they will fail if run on smaller synthetic data
