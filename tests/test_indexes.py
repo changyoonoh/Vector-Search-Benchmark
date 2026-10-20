@@ -61,9 +61,9 @@ def run_index(index, data, queries):
 
 # ── Embedded L2 indexes ───────────────────────────────────────────────────────
 @pytest.mark.parametrize("make_index", [
-    lambda: FaissFlatL2Index(D),
-    lambda: FaissFlatHNSWIndex(D),
-    lambda: FaissScalarQuantizerL2Index(D),
+    pytest.param(lambda: FaissFlatL2Index(D), marks=pytest.mark.faiss),
+    pytest.param(lambda: FaissFlatHNSWIndex(D), marks=pytest.mark.faiss),
+    pytest.param(lambda: FaissScalarQuantizerL2Index(D), marks=pytest.mark.faiss),
     lambda: QdrantIndex(D, metric_type="l2"),
     lambda: ChromaIndex(D, metric_type="l2"),
     lambda: AnnoyIndex(D, metric_type="l2"),
@@ -72,14 +72,15 @@ def run_index(index, data, queries):
     "FaissFlatL2", "FaissHNSW", "FaissScalarQuantizerL2",
     "Qdrant_L2", "Chroma_L2", "Annoy_L2", "HNSWLib_L2",
 ])
+@pytest.mark.local
 def test_correctness_l2(make_index):
     I = run_index(make_index(), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
 # ── Embedded Angular indexes ──────────────────────────────────────────────────
 @pytest.mark.parametrize("make_index", [
-    lambda: FaissFlatIPIndex(D),
-    lambda: FaissScalarQuantizerIPIndex(D),
+    pytest.param(lambda: FaissFlatIPIndex(D), marks=pytest.mark.faiss),
+    pytest.param(lambda: FaissScalarQuantizerIPIndex(D), marks=pytest.mark.faiss),
     lambda: QdrantIndex(D, metric_type="cosine"),
     lambda: ChromaIndex(D, metric_type="cosine"),
     lambda: AnnoyIndex(D, metric_type="angular"),
@@ -88,32 +89,39 @@ def test_correctness_l2(make_index):
     "FaissFlatIP", "FaissScalarQuantizerIP",
     "Qdrant_Angular", "Chroma_Angular", "Annoy_Angular", "HNSWLib_Angular",
 ])
+@pytest.mark.local
 def test_correctness_angular(make_index):
     I = run_index(make_index(), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
 # ── Embedded Weaviate ─────────────────────────────────────────────────────────
+@pytest.mark.external_service
 def test_correctness_weaviate_l2():
     I = run_index(WeaviateIndex(D, metric_type="l2"), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.external_service
 def test_correctness_weaviate_angular():
     I = run_index(WeaviateIndex(D, metric_type="cosine"), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
 # ── LanceDB (on-disk, uses a temp directory) ──────────────────────────────────
+@pytest.mark.local
 def test_correctness_lancedb_flat_l2(tmp_path):
     I = run_index(LanceDBFlatIndex(D, metric_type="l2", db_path=str(tmp_path / "flat")), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.local
 def test_correctness_lancedb_flat_angular(tmp_path):
     I = run_index(LanceDBFlatIndex(D, metric_type="cosine", db_path=str(tmp_path / "flat_ang")), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
+@pytest.mark.local
 def test_correctness_lancedb_ivf_l2(tmp_path):
     I = run_index(LanceDBIVFIndex(D, metric_type="l2", db_path=str(tmp_path / "ivf")), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.local
 def test_correctness_lancedb_ivf_angular(tmp_path):
     I = run_index(LanceDBIVFIndex(D, metric_type="cosine", db_path=str(tmp_path / "ivf_ang")), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
@@ -121,8 +129,8 @@ def test_correctness_lancedb_ivf_angular(tmp_path):
 # ── Server indexes (require Docker) ──────────────────────────────────────────
 # Run with: poetry run pytest -m docker
 # Skip with: poetry run pytest -m "not docker"
-pytestmark_docker = pytest.mark.docker
 
+@pytest.mark.external_service
 @pytest.mark.docker
 @pytest.mark.parametrize("make_index", [
     lambda: MilvusIndex(D, metric_type="L2", index_type="FLAT"),
@@ -136,36 +144,43 @@ def test_correctness_milvus(make_index):
     I = run_index(index, DATA, QUERIES)
     assert recall(I, gt) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_redis_l2():
     I = run_index(RedisIndex(D, metric_type="l2"), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_redis_angular():
     I = run_index(RedisIndex(D, metric_type="cosine"), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_elasticsearch_l2():
     I = run_index(ElasticsearchIndex(D, metric_type="l2"), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_elasticsearch_angular():
     I = run_index(ElasticsearchIndex(D, metric_type="cosine"), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_pgvector_l2():
     I = run_index(PgvectorIndex(D, metric_type="l2"), DATA, QUERIES)
     assert recall(I, GT_L2) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_pgvector_angular():
     I = run_index(PgvectorIndex(D, metric_type="cosine"), DATA, QUERIES)
     assert recall(I, GT_COSINE) >= MIN_RECALL
 
+@pytest.mark.external_service
 @pytest.mark.docker
 def test_correctness_meilisearch():
     I = run_index(MeilisearchIndex(D), DATA, QUERIES)

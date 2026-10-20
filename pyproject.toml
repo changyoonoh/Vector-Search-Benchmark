@@ -35,6 +35,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 markers = [
+    "faiss: FAISS correctness tests using synthetic data only",
+    "local: in-process or on-disk tests requiring no service processes",
+    "external_service: tests requiring a service process, including embedded Weaviate",
     "docker: tests that require Docker services to be running",
 ]
 
